@@ -17,17 +17,18 @@ func InitLog() {
 }
 
 func main() {
-	InitLog()
 	token := os.Args[1]
 	path := os.Args[2]
+	InitLog()
+	api.Init(token)
 	slog.Info("Retrieveing profile")
-	profile, err := api.GetProfile(token)
+	profile, err := api.GetProfile()
 	if err != nil {
 		slog.Error("Failed to retrieve profile")
 		panic(err)
 	}
 	slog.Info("Attempting to connect to event stream")
-	stream, err := api.StreamEvents(token)
+	stream, err := api.StreamEvents()
 	if err != nil {
 		slog.Error("Failed to initialize event stream")
 		panic(err)
@@ -40,7 +41,7 @@ func main() {
 			var event api.GameStartEvent
 			json.Unmarshal([]byte(content), &event)
 			slog.Info("Starting game " + event.Game.ID)
-			go HandlGame(token, event.Game.ID, profile.ID, path)
+			go HandlGame(event.Game.ID, profile.ID, path)
 		case "gameFinish":
 			var event api.GameFinsihEvent
 			json.Unmarshal([]byte(content), &event)
@@ -50,7 +51,7 @@ func main() {
 			json.Unmarshal([]byte(content), &event)
 			slog.Info(fmt.Sprintf("Received challenge from %s (%d)", event.Challenge.Challenger.Name, event.Challenge.Challenger.Rating))
 			slog.Info("Accepting challenge")
-			api.AcceptChallenge(event.Challenge.ID, token)
+			api.AcceptChallenge(event.Challenge.ID)
 		case "challengeCanceled":
 			var event api.ChallengeCanceledEvent
 			json.Unmarshal([]byte(content), &event)

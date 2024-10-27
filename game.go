@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-func HandlGame(token string, id string, bot string, path string) {
+func HandlGame(id string, bot string, path string) {
 	engine := NewEngine(path)
 	engine.Init()
-	stream, err := api.StreamGame(id, token)
+	stream, err := api.StreamGame(id)
 	if err != nil {
 		slog.Error("Failed to stream game " + id)
 		panic(err)
@@ -25,7 +25,7 @@ func HandlGame(token string, id string, bot string, path string) {
 			json.Unmarshal([]byte(content), &event)
 			initialFEN = event.InitialFen
 			isWhite = bot == event.White.ID
-			HandleTurn(&engine, token, id, isWhite, initialFEN, event.State)
+			HandleTurn(&engine, id, isWhite, initialFEN, event.State)
 		case "gameState":
 			var event api.GameStateEvent
 			json.Unmarshal([]byte(content), &event)
@@ -33,7 +33,7 @@ func HandlGame(token string, id string, bot string, path string) {
 				slog.Info("Game " + id + " terminated with status " + event.Status)
 				return
 			}
-			HandleTurn(&engine, token, id, isWhite, initialFEN, event)
+			HandleTurn(&engine, id, isWhite, initialFEN, event)
 		case "chatLine":
 			var event api.ChatLineEvent
 			json.Unmarshal([]byte(content), &event)
@@ -44,10 +44,10 @@ func HandlGame(token string, id string, bot string, path string) {
 	}
 }
 
-func HandleTurn(engine *Engine, token string, gameID string, isWhite bool, initialFen string, gameState api.GameStateEvent) error {
+func HandleTurn(engine *Engine, gameID string, isWhite bool, initialFen string, gameState api.GameStateEvent) error {
 	if IsTurn(initialFen, gameState.Moves, isWhite) {
 		move := engine.BestMove(initialFen, gameState.Moves, gameState.WTime, gameState.BTime)
-		api.MakeMove(gameID, token, move)
+		api.MakeMove(gameID, move)
 	}
 	return nil
 }

@@ -5,15 +5,15 @@ import (
 	"fmt"
 )
 
-func AcceptChallenge(id string, token string) error {
+func AcceptChallenge(id string) error {
 	return Post(fmt.Sprintf("https://lichess.org/api/challenge/%s/accept", id), token)
 }
 
-func DeclineChallenge(id string, token string) error {
+func DeclineChallenge(id string) error {
 	return Post(fmt.Sprintf("https://lichess.org/api/challenge/%s/decline", id), token)
 }
 
-func MakeMove(id string, token string, move string) error {
+func MakeMove(id string, move string) error {
 	return Post(fmt.Sprintf("https://lichess.org/api/bot/game/%s/move/%s", id, move), token)
 }
 
@@ -22,7 +22,7 @@ type Event struct {
 	Content string
 }
 
-func StreamEvents(token string) (chan Event, error) {
+func StreamEvents() (chan Event, error) {
 	stream, err := Stream("https://lichess.org/api/stream/event", token)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func StreamEvents(token string) (chan Event, error) {
 	return ch, nil
 }
 
-func StreamGame(id string, token string) (chan Event, error) {
+func StreamGame(id string) (chan Event, error) {
 	stream, err := Stream(fmt.Sprintf("https://lichess.org/api/bot/game/stream/%s", id), token)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ type ProfileInfo struct {
 	Username string
 }
 
-func GetProfile(token string) (ProfileInfo, error) {
+func GetProfile() (ProfileInfo, error) {
 	res, err := Get("https://lichess.org/api/account", token)
 	if err != nil {
 		return ProfileInfo{}, err
