@@ -46,7 +46,9 @@ func HandlGame(id string, bot string, path string) {
 
 func HandleTurn(engine *Engine, gameID string, isWhite bool, initialFen string, gameState api.GameStateEvent) error {
 	if IsTurn(initialFen, gameState.Moves, isWhite) {
+		slog.Info("Generating move for game " + gameID)
 		move := engine.BestMove(initialFen, gameState.Moves, gameState.WTime, gameState.BTime)
+		slog.Info("Sending move " + move + " for game " + gameID)
 		api.MakeMove(gameID, move)
 	}
 	return nil
